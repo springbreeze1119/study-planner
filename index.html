@@ -408,7 +408,7 @@ document.querySelectorAll('.profile-btn').forEach(btn=>{
   });
 });
 
-const GEMINI_MODEL = 'gemini-2.5-flash';
+const GEMINI_MODEL = 'gemini-3.5-flash';
 async function callGemini(systemPrompt, userContent){
   if(!state.geminiApiKey){
     throw new Error('NO_API_KEY');
