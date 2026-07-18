@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>学習手帳</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F6F3EC; --paper-line:#E4DFD1; --ink:#2B3347; --ink-soft:#6b7186;
+    --stamp-red:#BF3B30; --gold:#C8952A; --green:#5C8A5A;
+  }
+  *{box-sizing:border-box;}
+  body{ margin:0; font-family:'Noto Sans JP',sans-serif; background:var(--paper); color:var(--ink);
+    background-image: linear-gradient(var(--paper-line) 1px, transparent 1px); background-size: 100% 34px; min-height:100vh; }
+  .app{ max-width:980px; margin:0 auto; padding:28px 20px 60px; }
+  .header{ display:flex; align-items:baseline; justify-content:space-between; margin-bottom:22px; flex-wrap:wrap; gap:8px;}
+  .header h1{ font-family:'Zen Maru Gothic',sans-serif; font-weight:900; font-size:28px; margin:0; letter-spacing:.02em; }
+  .header .sub{ font-size:12.5px; color:var(--ink-soft); }
+  .tabs{ display:flex; gap:6px; margin-bottom:18px; flex-wrap:wrap; }
+  .tab{ font-family:'Zen Maru Gothic',sans-serif; font-weight:700; font-size:13px; padding:9px 14px; border-radius:10px 10px 0 0;
+    background:#EAE5D6; color:var(--ink-soft); cursor:pointer; border:1px solid var(--paper-line); border-bottom:none; transition:all .15s ease; }
+  .tab.active{ background:#fff; color:var(--ink); box-shadow:0 -2px 6px rgba(0,0,0,.04); }
+  .tab:hover{ color:var(--ink); }
+  .card{ background:#fff; border:1px solid var(--paper-line); border-radius:4px 14px 14px 14px; padding:24px; box-shadow:0 2px 14px rgba(60,50,20,.06); }
+  .panel{ display:none; }
+  .panel.active{ display:block; animation:fade .25s ease; }
+  @keyframes fade{ from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:none;} }
+  h2.section-title{ font-family:'Zen Maru Gothic',sans-serif; font-size:16px; margin:0 0 14px; display:flex; align-items:center; gap:8px; }
+  h2.section-title::before{ content:''; width:6px; height:18px; background:var(--gold); border-radius:2px; display:inline-block;}
+  label{ font-size:12.5px; color:var(--ink-soft); display:block; margin-bottom:4px; }
+  input[type=text], input[type=number], input[type=date], textarea, select{
+    width:100%; font-family:inherit; font-size:14px; padding:9px 10px; border:1px solid var(--paper-line); border-radius:8px; background:#FCFBF8; color:var(--ink); }
+  textarea{ resize:vertical; min-height:64px; }
+  .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+  @media(max-width:640px){ .grid2{grid-template-columns:1fr;} }
+  .field{ margin-bottom:14px; }
+  .btn{ font-family:'Zen Maru Gothic',sans-serif; font-weight:700; font-size:13px; padding:9px 18px; background:var(--ink); color:#fff; border:none; border-radius:20px; cursor:pointer; }
+  .btn:hover{ opacity:.88; }
+  .btn:disabled{ opacity:.5; cursor:default; }
+  .btn.small{ padding:6px 12px; font-size:12px; }
+  .btn.outline{ background:#fff; color:var(--ink); border:1px solid var(--paper-line); }
+  .goal-line{ display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px dashed var(--paper-line);}
+  .goal-line:last-child{border-bottom:none;}
+  .goal-label{ font-size:12.5px; color:var(--ink-soft);}
+  .goal-value{ font-weight:700; font-family:'Zen Maru Gothic',sans-serif; }
+  .subject-pill{ font-size:11px; padding:3px 9px; border-radius:20px; color:#fff; font-weight:700; display:inline-block;}
+  .subject-tabs{ display:flex; gap:6px; flex-wrap:wrap; margin-bottom:16px; }
+  .subject-tab{ font-size:12.5px; font-weight:700; padding:6px 13px; border-radius:20px; cursor:pointer; border:2px solid transparent; color:#fff; opacity:.55; }
+  .subject-tab.active{ opacity:1; border-color:var(--ink); }
+  .progress-track{ height:6px; background:var(--paper-line); border-radius:4px; margin-bottom:16px; overflow:hidden;}
+  .progress-fill{ height:100%; border-radius:4px; transition:width .3s ease; }
+
+  .points-bar{ display:flex; gap:24px; align-items:center; background:#FBF5EA; border:1px solid var(--paper-line); border-radius:10px; padding:14px 18px; margin-bottom:20px; flex-wrap:wrap;}
+  .points-item .p-label{ font-size:11.5px; color:var(--ink-soft); }
+  .points-item .p-val{ font-family:'Zen Maru Gothic',sans-serif; font-weight:900; font-size:24px; color:var(--gold); }
+  .points-item .p-val span{ font-size:12px; margin-left:2px; }
+
+  .monthly-plan{ margin-bottom:24px; }
+  .monthly-plan .mp-title{ font-family:'Zen Maru Gothic',sans-serif; font-weight:700; font-size:14px; margin-bottom:10px; }
+  .mp-item{ display:flex; align-items:center; gap:10px; padding:8px 10px; border:1px solid var(--paper-line); border-radius:8px; margin-bottom:6px; background:#FCFBF8; }
+  .mp-item .title{ flex:1; font-size:13px; }
+  .badge{ font-size:10.5px; padding:2px 8px; border-radius:10px; background:#EFEBDD; color:var(--ink-soft); font-weight:700; }
+  .badge.mastered{ background:#E6EFE4; color:var(--green); }
+
+  .step-row{ display:flex; align-items:center; gap:8px; padding:9px 10px; border:1px solid var(--paper-line); border-radius:8px; margin-bottom:6px; background:#FCFBF8; flex-wrap:wrap; }
+  .step-row .num{ font-family:'Zen Maru Gothic',sans-serif; font-weight:900; font-size:12px; color:var(--ink-soft); width:22px; flex-shrink:0;}
+  .step-row .title{ flex:1; font-size:13.5px; min-width:140px; }
+  .step-row.planned{ border-color:var(--gold); }
+  .star-btn{ width:30px; height:30px; border-radius:50%; border:1.5px solid var(--paper-line); background:#fff; cursor:pointer; font-size:14px; color:var(--ink-soft); flex-shrink:0; }
+  .star-btn.on{ background:var(--gold); border-color:var(--gold); color:#fff; }
+  .recommend-box{ width:100%; margin-top:6px; padding:8px 10px; background:#FBF5EA; border-left:3px solid var(--gold); border-radius:0 8px 8px 0; font-size:12px; }
+  .recommend-box .r-title{ font-weight:700; margin-bottom:4px; }
+  .recommend-chip{ display:inline-flex; align-items:center; gap:6px; background:#fff; border:1px solid var(--paper-line); border-radius:20px; padding:4px 10px; margin:2px 4px 2px 0; font-size:11.5px; }
+  .recommend-chip button{ border:none; background:var(--gold); color:#fff; border-radius:50%; width:16px; height:16px; font-size:10px; cursor:pointer; line-height:1;}
+
+  .stamp-btn{ width:34px; height:34px; border-radius:50%; border:2px solid #c9c2ab; background:#fff; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; position:relative; }
+  .stamp-btn .mark{ font-family:'Zen Maru Gothic',sans-serif; font-weight:900; font-size:13px; color:var(--stamp-red); opacity:0; transform:scale(0) rotate(-15deg); transition:all .18s cubic-bezier(.34,1.56,.64,1); }
+  .stamp-btn.on{ border-color:var(--stamp-red); }
+  .stamp-btn.on .mark{ opacity:1; transform:scale(1) rotate(-8deg); }
+
+  .del{ background:none; border:none; color:var(--ink-soft); cursor:pointer; font-size:15px; padding:2px 6px;}
+  .del:hover{ color:var(--stamp-red); }
+  .add-row{ display:flex; gap:8px; margin-top:6px; flex-wrap:wrap; }
+  .add-row input, .add-row select{ flex:1; min-width:110px; }
+  table.log-table{ width:100%; border-collapse:collapse; font-size:13px; margin-top:10px;}
+  table.log-table th{ text-align:left; font-size:11px; color:var(--ink-soft); padding:6px 8px; border-bottom:2px solid var(--paper-line);}
+  table.log-table td{ padding:8px; border-bottom:1px solid var(--paper-line); vertical-align:top;}
+  .time-total{ font-family:'Zen Maru Gothic',sans-serif; font-weight:900; font-size:22px; }
+  .reflect-block{ margin-bottom:22px; padding-bottom:18px; border-bottom:1px dashed var(--paper-line);}
+  .reflect-block:last-child{ border:none; }
+  .reflect-head{ display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;}
+  .reflect-head .wk{ font-family:'Zen Maru Gothic',sans-serif; font-weight:700; font-size:13.5px;}
+  .quote-mark{ font-size:11px; color:var(--ink-soft); font-weight:700; margin-bottom:3px;}
+  .parent-box{ background:#FBF5EA; border-left:3px solid var(--gold); padding:10px 12px; border-radius:0 8px 8px 0; margin-top:8px;}
+  .empty{ color:var(--ink-soft); font-size:13px; padding:14px 0; }
+  .status{ font-size:11px; color:var(--ink-soft); text-align:right; margin-top:10px;}
+  .prompt-chips{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:10px; }
+  .chip{ font-size:11.5px; padding:6px 12px; border-radius:20px; background:#EFEBDD; border:1px solid var(--paper-line); cursor:pointer; color:var(--ink-soft); }
+  .chip:hover{ color:var(--ink); border-color:var(--gold); }
+  .qa-block{ margin-top:20px; padding:14px; border:1px solid var(--paper-line); border-radius:10px; background:#FCFBF8; }
+  .qa-q{ font-size:13.5px; font-weight:700; margin-bottom:6px; }
+  .qa-a{ font-size:13.5px; line-height:1.7; white-space:pre-wrap; }
+  .qa-meta{ font-size:11px; color:var(--ink-soft); margin-top:8px; display:flex; justify-content:space-between; }
+  .loading{ font-size:12.5px; color:var(--ink-soft); }
+
+  .countdown-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(150px,1fr)); gap:10px; margin-top:16px; }
+  .cd-card{ border-radius:10px; padding:12px 14px; border:1px solid var(--paper-line); background:#FCFBF8; }
+  .cd-card .cd-label{ font-size:11.5px; color:var(--ink-soft); margin-bottom:2px; }
+  .cd-card .cd-name{ font-size:12px; font-weight:700; margin-bottom:6px; min-height:16px; }
+  .cd-card .cd-days{ font-family:'Zen Maru Gothic',sans-serif; font-weight:900; font-size:26px; line-height:1; }
+  .cd-card .cd-days span{ font-size:12px; font-weight:700; margin-left:2px; }
+  .cd-card .cd-date{ font-size:10.5px; color:var(--ink-soft); margin-top:4px; }
+  .cd-card.urgent{ border-color:var(--stamp-red); background:#FBEDEA; }
+  .cd-card.urgent .cd-days{ color:var(--stamp-red); }
+  .cd-card.soon{ border-color:var(--gold); background:#FBF5EA; }
+  .cd-card.soon .cd-days{ color:var(--gold); }
+  .cd-card.past{ opacity:.5; }
+
+  .quiz-overlay{ display:none; position:fixed; inset:0; background:rgba(43,51,71,.55); z-index:50; align-items:center; justify-content:center; padding:20px; }
+  .quiz-overlay.open{ display:flex; }
+  .quiz-card{ background:#fff; border-radius:16px; padding:26px; max-width:480px; width:100%; max-height:86vh; overflow-y:auto; }
+  .quiz-head{ display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; }
+  .quiz-head .qh-title{ font-family:'Zen Maru Gothic',sans-serif; font-weight:900; font-size:15px; }
+  .quiz-head .qh-progress{ font-size:12px; color:var(--ink-soft); }
+  .quiz-question{ font-size:14.5px; line-height:1.7; margin-bottom:16px; min-height:40px; }
+  .quiz-choice{ display:block; width:100%; text-align:left; padding:11px 14px; margin-bottom:8px; border:1.5px solid var(--paper-line); border-radius:10px; background:#FCFBF8; cursor:pointer; font-size:13.5px; font-family:inherit; }
+  .quiz-choice:hover{ border-color:var(--gold); }
+  .quiz-choice.correct{ border-color:var(--green); background:#E6EFE4; }
+  .quiz-choice.wrong{ border-color:var(--stamp-red); background:#FBEDEA; }
+  .quiz-result{ text-align:center; padding:14px 0; }
+  .quiz-result .qr-score{ font-family:'Zen Maru Gothic',sans-serif; font-weight:900; font-size:34px; margin-bottom:6px; }
+  .quiz-result .qr-pass{ color:var(--green); }
+  .quiz-result .qr-fail{ color:var(--stamp-red); }
+  .quiz-close{ position:absolute; top:14px; right:16px; background:none; border:none; font-size:20px; cursor:pointer; color:var(--ink-soft); }
+  .quiz-card{ position:relative; }
+
+  .clock-wrap{ position:relative; width:260px; height:260px; margin:10px auto 6px; }
+  .clock-face{ width:260px; height:260px; border-radius:50%; background:var(--paper-line); position:relative; }
+  .clock-hole{ position:absolute; top:38px; left:38px; width:184px; height:184px; border-radius:50%; background:#fff; display:flex; align-items:center; justify-content:center; font-family:'Zen Maru Gothic',sans-serif; font-weight:700; font-size:13px; color:var(--ink-soft); text-align:center; }
+  .clock-labels{ position:absolute; inset:0; pointer-events:none; }
+  .clock-labels span{ position:absolute; font-size:11px; color:var(--ink-soft); transform:translate(-50%,-50%); }
+  .legend{ display:flex; gap:10px; flex-wrap:wrap; justify-content:center; margin-top:10px; }
+  .legend-item{ display:flex; align-items:center; gap:5px; font-size:11.5px; color:var(--ink-soft); }
+  .legend-dot{ width:10px; height:10px; border-radius:50%; display:inline-block; }
+  .time-row{ display:flex; align-items:center; gap:10px; padding:8px 10px; border:1px solid var(--paper-line); border-radius:8px; margin-bottom:6px; background:#FCFBF8; }
+  .time-row .t-range{ font-family:'Zen Maru Gothic',sans-serif; font-weight:700; font-size:12.5px; width:110px; flex-shrink:0; }
+  .time-row .t-content{ flex:1; font-size:13px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <h1>学習手帳</h1>
+    <div class="sub">目標 → 1日の使い方 → 学習ステップ → 記録 → AIに質問 → 振り返り</div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="goals">目標設定</div>
+    <div class="tab" data-tab="time">1日の使い方</div>
+    <div class="tab" data-tab="steps">学習ステップ</div>
+    <div class="tab" data-tab="log">自学記録</div>
+    <div class="tab" data-tab="ask">AIに質問</div>
+    <div class="tab" data-tab="reflect">振り返り・保護者コメント</div>
+  </div>
+
+  <div class="card">
+
+    <div class="panel active" id="panel-goals">
+      <h2 class="section-title">目標設定</h2>
+      <div class="grid2">
+        <div class="field"><label>志望校・目標</label><input type="text" id="g-univ" placeholder="例：〇〇大学 理学部"></div>
+        <div class="field"><label>今学期の目標</label><input type="text" id="g-term" placeholder="例：数I・Aを完全に固める"></div>
+      </div>
+      <div class="field"><label>今週の目標</label><input type="text" id="g-week" placeholder="例：数学ステップを2つ進める"></div>
+      <button class="btn" id="save-goals">目標を保存</button>
+      <div style="margin-top:22px; padding-top:16px; border-top:1px dashed var(--paper-line);">
+        <div class="goal-line"><span class="goal-label">志望校・目標</span><span class="goal-value" id="show-univ">未設定</span></div>
+        <div class="goal-line"><span class="goal-label">今学期の目標</span><span class="goal-value" id="show-term">未設定</span></div>
+        <div class="goal-line"><span class="goal-label">今週の目標</span><span class="goal-value" id="show-week">未設定</span></div>
+      </div>
+
+      <h2 class="section-title" style="margin-top:26px;">重要日程</h2>
+      <div class="grid2">
+        <div class="field"><label>志望校1：名称</label><input type="text" id="cd-univ1-name" placeholder="例：〇〇大学"></div>
+        <div class="field"><label>志望校1：試験日</label><input type="date" id="cd-univ1-date"></div>
+        <div class="field"><label>志望校2：名称</label><input type="text" id="cd-univ2-name" placeholder="例：△△大学"></div>
+        <div class="field"><label>志望校2：試験日</label><input type="date" id="cd-univ2-date"></div>
+        <div class="field"><label>中間試験</label><input type="date" id="cd-midterm"></div>
+        <div class="field"><label>期末試験</label><input type="date" id="cd-final"></div>
+        <div class="field"><label>模試1</label><input type="date" id="cd-mock1"></div>
+        <div class="field"><label>模試2</label><input type="date" id="cd-mock2"></div>
+        <div class="field"><label>模試3</label><input type="date" id="cd-mock3"></div>
+      </div>
+      <button class="btn" id="save-dates">重要日程を保存</button>
+      <div class="countdown-grid" id="countdown-grid"></div>
+    </div>
+
+    <div class="panel" id="panel-time">
+      <h2 class="section-title">1日の使い方</h2>
+
+      <div class="clock-wrap">
+        <div class="clock-face" id="clock-face">
+          <div class="clock-hole"><span id="clock-date-label">1日の目安</span></div>
+        </div>
+        <div class="clock-labels" id="clock-labels"></div>
+      </div>
+
+      <div class="legend" id="time-legend"></div>
+
+      <div class="add-row" style="margin-top:16px;">
+        <select id="time-category"></select>
+        <input type="time" id="time-start">
+        <input type="time" id="time-end">
+        <input type="text" id="time-content" placeholder="内容（任意）例：皿洗い・宿題・部活など">
+        <button class="btn small" id="time-add">追加</button>
+      </div>
+      <div class="status" style="text-align:left;">特定の日ではなく、普段の1日の過ごし方の目安として入力してください。「お手伝い」もカテゴリの1つとして時間帯を入力すれば、この円グラフに一緒に表示されます。完了チェックは不要です。</div>
+
+      <div id="time-list" style="margin-top:14px;"></div>
+    </div>
+
+    <div class="panel" id="panel-steps">
+      <h2 class="section-title">学習ステップ</h2>
+
+      <div class="points-bar">
+        <div class="points-item"><div class="p-label">累積ポイント</div><div class="p-val" id="points-total">0<span>pt</span></div></div>
+        <div class="points-item"><div class="p-label">今月の獲得ポイント</div><div class="p-val" id="points-month">0<span>pt</span></div></div>
+      </div>
+
+      <div class="monthly-plan">
+        <div class="mp-title" id="mp-title">今月のステップ</div>
+        <div id="mp-list"></div>
+      </div>
+
+      <h2 class="section-title" style="margin-top:24px;">全ステップから選ぶ</h2>
+      <div class="subject-tabs" id="step-subject-tabs"></div>
+      <div class="progress-track"><div class="progress-fill" id="step-progress-fill"></div></div>
+      <div id="step-list"></div>
+      <div class="status">☆を押すと「今月のステップ」に追加されます。確認テストで5問中4問以上正解すると達成（+10pt）。何度でも挑戦できます。</div>
+    </div>
+
+    <div class="panel" id="panel-log">
+      <h2 class="section-title">自学記録</h2>
+      <div class="add-row">
+        <input type="date" id="log-date">
+        <select id="log-subject"></select>
+        <input type="text" id="log-content" placeholder="学習内容（例：青チャート例題12-20）">
+        <input type="number" id="log-minutes" placeholder="時間(分)" style="max-width:100px;">
+        <button class="btn small" id="log-add">記録する</button>
+      </div>
+      <table class="log-table" id="log-table">
+        <thead><tr><th>日付</th><th>教科</th><th>内容</th><th>時間</th><th></th></tr></thead>
+        <tbody id="log-body"></tbody>
+      </table>
+      <div style="margin-top:14px;">合計学習時間：<span class="time-total" id="log-total">0</span> 分</div>
+
+      <h2 class="section-title" style="margin-top:26px;">課題（学校の宿題・この期間にやるべきこと）</h2>
+      <div class="add-row">
+        <select id="assign-subject"></select>
+        <input type="text" id="assign-content" placeholder="課題の内容（例：数学ワーク p20-25）">
+        <input type="date" id="assign-deadline">
+        <button class="btn small" id="assign-add">追加</button>
+      </div>
+      <table class="log-table" id="assign-table">
+        <thead><tr><th>教科</th><th>内容</th><th>期限</th><th></th><th></th></tr></thead>
+        <tbody id="assign-body"></tbody>
+      </table>
+    </div>
+
+    <div class="panel" id="panel-ask">
+      <h2 class="section-title">AIに質問（壁打ち）</h2>
+      <div class="field" style="background:#FBF5EA; border:1px solid var(--paper-line); border-radius:10px; padding:12px 14px;">
+        <label>Gemini APIキー（Google AI Studioで発行したもの）</label>
+        <div class="add-row" style="margin-top:0;">
+          <input type="text" id="gemini-key" placeholder="AIzaSy... を貼り付け">
+          <button class="btn small" id="gemini-key-save">保存</button>
+        </div>
+        <div style="font-size:11px; color:var(--ink-soft); margin-top:6px;">最初に1回保存すれば、この端末のこのブラウザではそれ以降入力不要です。他人には見えません（この端末にのみ保存）。</div>
+      </div>
+      <div class="grid2">
+        <div class="field"><label>教科</label><select id="ask-subject"></select></div>
+        <div class="field"><label>今取り組んでいるステップ（任意）</label><input type="text" id="ask-step" placeholder="例：2次関数の最大・最小"></div>
+      </div>
+      <div class="prompt-chips" id="prompt-chips"></div>
+      <div class="field"><label>質問・相談内容</label><textarea id="ask-text" placeholder="わからない問題や、解説を読んでもわからない点などを書いてください"></textarea></div>
+      <button class="btn" id="ask-send">AIに質問する</button>
+      <span class="loading" id="ask-loading" style="display:none; margin-left:10px;">考え中…</span>
+      <div id="qa-history"></div>
+    </div>
+
+    <div class="panel" id="panel-reflect">
+      <h2 class="section-title">振り返り・保護者コメント</h2>
+      <div class="grid2"><div class="field"><label>対象週</label><input type="text" id="rf-week" placeholder="例：7/15の週"></div></div>
+      <div class="field"><label>今週の振り返り（本人）</label><textarea id="rf-student" placeholder="できたこと・難しかったこと・来週への一言"></textarea></div>
+      <div class="field"><label>保護者コメント</label><textarea id="rf-parent" placeholder="応援メッセージやアドバイスを一言"></textarea></div>
+      <button class="btn" id="rf-add">振り返りを記録</button>
+      <div id="reflect-list" style="margin-top:22px;"></div>
+    </div>
+
+  </div>
+</div>
+
+<div class="quiz-overlay" id="quiz-overlay">
+  <div class="quiz-card">
+    <button class="quiz-close" id="quiz-close">×</button>
+    <div id="quiz-body"></div>
+  </div>
+</div>
+
+<script>
+const SUBJECTS = [
+  {id:'math', name:'数学', hex:'#4C6FFF'},
+  {id:'eng', name:'英語', hex:'#2A9D8F'},
+  {id:'chem', name:'化学', hex:'#E0932E'},
+  {id:'bio', name:'生物', hex:'#6B9B5E'},
+  {id:'kok', name:'国語', hex:'#C4677D'},
+  {id:'nihonshi', name:'日本史', hex:'#8B6F47'},
+];
+
+const CURRICULUM = {
+  math: ['数と式：展開・因数分解','数と式：実数・平方根','数と式：1次不等式','集合と命題',
+    '2次関数：グラフとその移動','2次関数：最大・最小','2次関数：2次方程式・2次不等式',
+    '図形と計量：三角比の基礎','図形と計量：正弦定理・余弦定理','データの分析',
+    '場合の数','順列・組合せ','確率','平面図形の性質','整数の性質',
+    '式と証明','複素数と方程式','図形と方程式','三角関数','指数関数・対数関数',
+    '微分法','積分法','数列','ベクトル'],
+  eng: ['基本文型・時制','助動詞・受動態','不定詞・動名詞','分詞・関係詞','比較・仮定法',
+    '基礎単語(〜1200語)','短文読解・精読','長文読解（基礎）','英作文の基礎','リスニング基礎'],
+  chem: ['物質量とモル計算','化学反応式と量的関係','酸と塩基','酸化還元反応',
+    '無機化学：気体・金属','有機化学：脂肪族化合物','有機化学：芳香族化合物','高分子化合物'],
+  bio: ['細胞の構造とはたらき','代謝：呼吸と光合成','遺伝情報とDNA','体内環境の維持',
+    '免疫のしくみ','生殖と発生','生態と環境'],
+  kok: ['古文文法：用言・助動詞','古文単語','古文読解','漢文句形','漢文読解',
+    '現代文読解：評論','現代文読解：小説'],
+  nihonshi: ['原始・古代','中世','近世','近代（明治〜日清・日露）','近代（大正〜昭和戦前）',
+    '現代（戦後〜）','文化史総整理']
+};
+
+const PROMPT_TEMPLATES = [
+  {label:'わからない問題を質問する', text:'[教科]の問題です。\n問題：（問題文を書く）\nどこまで自分で考えたか：（自分の途中式・考え方）\nどこでつまずいたか：（わからなくなった箇所）\n\n解答を先に見せず、ヒントを1つだけ出してください。それでもわからなければ次のヒントをください。'},
+  {label:'解説を読んでもわからない', text:'参考書のこの解説を読んでもわかりません。\n（解説文を貼る）\n私が理解できていない部分はどこだと思いますか？高校生にわかるレベルまで噛み砕いて説明してください。'},
+  {label:'英作文・論述を添削してほしい', text:'以下は[英作文/論述]の解答です。\n問題：（問題文）\n私の解答：（解答文）\n\n減点される箇所とその理由、私の解答を活かした改善案を教えてください。模範解答をそのまま出さないでください。'},
+  {label:'理解度チェック問題を出してほしい', text:'今週学習した範囲：（単元名）\n使用した教材：（教材名・ページ）\n\nこの範囲の理解度を確認する問題を5問作ってください。基礎3問・応用2問でお願いします。解答はすぐに見せないでください。'}
+];
+
+const STORE_KEY = 'study-planner-data';
+const DEFAULT_STATE = () => ({
+  goals:{univ:'', term:'', week:''},
+  countdowns:{ univ1:{name:'', date:''}, univ2:{name:'', date:''}, midterm:{date:''}, final:{date:''}, mock1:{date:''}, mock2:{date:''}, mock3:{date:''} },
+  stepRecords:{}, monthlyPlan:{}, questionBanks:{},
+  logs:[], reflections:[], qaHistory:[],
+  geminiApiKey:'',
+  timeBlocks:[], assignments:[]
+});
+let state = DEFAULT_STATE();
+let currentStepSubject = 'math';
+let quiz = null; // transient quiz session
+
+function uid(){ return Math.random().toString(36).slice(2,10); }
+function subjectOf(id){ return SUBJECTS.find(s=>s.id===id) || SUBJECTS[0]; }
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+function currentMonthStr(){ return new Date().toISOString().slice(0,7); }
+
+async function loadState(){
+  try{
+    const raw = localStorage.getItem(STORE_KEY);
+    if(raw){
+      const parsed = JSON.parse(raw);
+      state = Object.assign(DEFAULT_STATE(), parsed);
+      if(!state.stepRecords) state.stepRecords = {};
+      if(!state.monthlyPlan) state.monthlyPlan = {};
+      if(!state.questionBanks) state.questionBanks = {};
+      if(state.geminiApiKey === undefined) state.geminiApiKey = '';
+      if(!state.timeBlocks) state.timeBlocks = [];
+      if(!state.assignments) state.assignments = [];
+    }
+  }catch(e){ /* 初回はデータなし */ }
+  render();
+}
+async function saveState(){
+  try{ localStorage.setItem(STORE_KEY, JSON.stringify(state)); }
+  catch(e){ console.error('保存に失敗しました', e); }
+}
+
+const GEMINI_MODEL = 'gemini-2.5-flash';
+async function callGemini(systemPrompt, userContent){
+  if(!state.geminiApiKey){
+    throw new Error('NO_API_KEY');
+  }
+  const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${state.geminiApiKey}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      systemInstruction: { parts: [{ text: systemPrompt }] },
+      contents: [{ role: "user", parts: [{ text: userContent }] }]
+    })
+  });
+  const data = await response.json();
+  if(data.error){ throw new Error(data.error.message || 'GEMINI_ERROR'); }
+  const cand = (data.candidates && data.candidates[0]) || null;
+  const text = cand ? (cand.content.parts || []).map(p=>p.text||'').join('\n') : '';
+  return text;
+}
+
+
+
+document.getElementById('gemini-key-save').addEventListener('click', async ()=>{
+  state.geminiApiKey = document.getElementById('gemini-key').value.trim();
+  await saveState();
+  alert('Gemini APIキーを保存しました。次回以降は入力不要です。');
+});
+
+document.querySelectorAll('.tab').forEach(tab=>{
+  tab.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('panel-'+tab.dataset.tab).classList.add('active');
+  });
+});
+
+// ---- 目標 ----
+document.getElementById('save-goals').addEventListener('click', async ()=>{
+  state.goals.univ = document.getElementById('g-univ').value;
+  state.goals.term = document.getElementById('g-term').value;
+  state.goals.week = document.getElementById('g-week').value;
+  await saveState(); renderGoals();
+});
+function renderGoals(){
+  document.getElementById('g-univ').value = state.goals.univ || '';
+  document.getElementById('g-term').value = state.goals.term || '';
+  document.getElementById('g-week').value = state.goals.week || '';
+  document.getElementById('show-univ').textContent = state.goals.univ || '未設定';
+  document.getElementById('show-term').textContent = state.goals.term || '未設定';
+  document.getElementById('show-week').textContent = state.goals.week || '未設定';
+}
+
+// ---- 重要日程 ----
+document.getElementById('save-dates').addEventListener('click', async ()=>{
+  state.countdowns.univ1 = { name: document.getElementById('cd-univ1-name').value, date: document.getElementById('cd-univ1-date').value };
+  state.countdowns.univ2 = { name: document.getElementById('cd-univ2-name').value, date: document.getElementById('cd-univ2-date').value };
+  state.countdowns.midterm = { date: document.getElementById('cd-midterm').value };
+  state.countdowns.final = { date: document.getElementById('cd-final').value };
+  state.countdowns.mock1 = { date: document.getElementById('cd-mock1').value };
+  state.countdowns.mock2 = { date: document.getElementById('cd-mock2').value };
+  state.countdowns.mock3 = { date: document.getElementById('cd-mock3').value };
+  await saveState(); renderCountdowns();
+});
+function daysUntil(dateStr){
+  if(!dateStr) return null;
+  const today = new Date(); today.setHours(0,0,0,0);
+  const target = new Date(dateStr + 'T00:00:00');
+  return Math.round((target - today) / 86400000);
+}
+function renderCountdownFields(){
+  document.getElementById('cd-univ1-name').value = state.countdowns.univ1.name || '';
+  document.getElementById('cd-univ1-date').value = state.countdowns.univ1.date || '';
+  document.getElementById('cd-univ2-name').value = state.countdowns.univ2.name || '';
+  document.getElementById('cd-univ2-date').value = state.countdowns.univ2.date || '';
+  document.getElementById('cd-midterm').value = state.countdowns.midterm.date || '';
+  document.getElementById('cd-final').value = state.countdowns.final.date || '';
+  document.getElementById('cd-mock1').value = state.countdowns.mock1.date || '';
+  document.getElementById('cd-mock2').value = state.countdowns.mock2.date || '';
+  document.getElementById('cd-mock3').value = state.countdowns.mock3.date || '';
+}
+function renderCountdowns(){
+  const items = [
+    {label:'志望校1', name: state.countdowns.univ1.name, date: state.countdowns.univ1.date},
+    {label:'志望校2', name: state.countdowns.univ2.name, date: state.countdowns.univ2.date},
+    {label:'中間試験', name:'', date: state.countdowns.midterm.date},
+    {label:'期末試験', name:'', date: state.countdowns.final.date},
+    {label:'模試1', name:'', date: state.countdowns.mock1.date},
+    {label:'模試2', name:'', date: state.countdowns.mock2.date},
+    {label:'模試3', name:'', date: state.countdowns.mock3.date},
+  ].filter(it => it.date);
+  const grid = document.getElementById('countdown-grid');
+  grid.innerHTML = '';
+  if(items.length === 0){ grid.innerHTML = '<div class="empty">日付を入力すると、ここにカウントダウンが表示されます</div>'; return; }
+  items.sort((a,b)=> (a.date > b.date ? 1 : -1));
+  items.forEach(it=>{
+    const d = daysUntil(it.date);
+    let cls = 'cd-card', daysText = '';
+    if(d < 0){ cls += ' past'; daysText = '終了'; }
+    else if(d === 0){ daysText = '本日'; cls += ' urgent'; }
+    else{ daysText = d + '<span>日前</span>'; if(d <= 14) cls += ' urgent'; else if(d <= 60) cls += ' soon'; }
+    const card = document.createElement('div');
+    card.className = cls;
+    card.innerHTML = `<div class="cd-label">${it.label}</div><div class="cd-name">${it.name||''}</div><div class="cd-days">${daysText}</div><div class="cd-date">${it.date}</div>`;
+    grid.appendChild(card);
+  });
+}
+
+// ---- ポイント ----
+function stepRecordsFor(subject, stepIndex){
+  if(!state.stepRecords[subject]) state.stepRecords[subject] = {};
+  if(!state.stepRecords[subject][stepIndex]) state.stepRecords[subject][stepIndex] = [];
+  return state.stepRecords[subject][stepIndex];
+}
+function totalPoints(){
+  let n = 0;
+  Object.values(state.stepRecords).forEach(bySubject=>{
+    Object.values(bySubject).forEach(arr=>{ n += arr.length; });
+  });
+  return n * 10;
+}
+function monthlyPoints(){
+  const m = currentMonthStr();
+  let n = 0;
+  Object.values(state.stepRecords).forEach(bySubject=>{
+    Object.values(bySubject).forEach(arr=>{ n += arr.filter(d=>d.startsWith(m)).length; });
+  });
+  return n * 10;
+}
+function renderPoints(){
+  document.getElementById('points-total').innerHTML = totalPoints() + '<span>pt</span>';
+  document.getElementById('points-month').innerHTML = monthlyPoints() + '<span>pt</span>';
+}
+
+// ---- 今月のステップ ----
+function monthlyList(){
+  const m = currentMonthStr();
+  return state.monthlyPlan[m] || [];
+}
+function isInMonthlyPlan(subject, stepIndex){
+  return monthlyList().some(it=> it.subject===subject && it.stepIndex===stepIndex);
+}
+function toggleMonthlyStep(subject, stepIndex){
+  const m = currentMonthStr();
+  if(!state.monthlyPlan[m]) state.monthlyPlan[m] = [];
+  const list = state.monthlyPlan[m];
+  const idx = list.findIndex(it=> it.subject===subject && it.stepIndex===stepIndex);
+  if(idx === -1){ list.push({subject, stepIndex}); return true; }
+  else{ list.splice(idx,1); return false; }
+}
+function masteredCount(subject, stepIndex){ return stepRecordsFor(subject, stepIndex).length; }
+
+function renderMonthlyPlan(){
+  const now = new Date();
+  document.getElementById('mp-title').textContent = `今月のステップ（${now.getFullYear()}年${now.getMonth()+1}月）`;
+  const wrap = document.getElementById('mp-list');
+  const list = monthlyList();
+  wrap.innerHTML = '';
+  if(list.length === 0){ wrap.innerHTML = '<div class="empty">下の一覧から☆を押して、今月取り組むステップを選んでください</div>'; return; }
+  list.forEach(it=>{
+    const sub = subjectOf(it.subject);
+    const title = CURRICULUM[it.subject][it.stepIndex];
+    const mc = masteredCount(it.subject, it.stepIndex);
+    const row = document.createElement('div');
+    row.className = 'mp-item';
+    row.innerHTML = `
+      <span class="subject-pill" style="background:${sub.hex}">${sub.name}</span>
+      <span class="title">${title}</span>
+      <span class="badge ${mc>0?'mastered':''}">${mc>0 ? '達成 x'+mc : '未達成'}</span>
+      <button class="btn small" data-quiz="1" data-subject="${it.subject}" data-i="${it.stepIndex}">テストを受ける</button>
+      <button class="del" data-remove="1" data-subject="${it.subject}" data-i="${it.stepIndex}">×</button>
+    `;
+    wrap.appendChild(row);
+  });
+  wrap.querySelectorAll('[data-quiz]').forEach(btn=>{
+    btn.addEventListener('click', ()=> openQuiz(btn.dataset.subject, parseInt(btn.dataset.i,10)));
+  });
+  wrap.querySelectorAll('[data-remove]').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      toggleMonthlyStep(btn.dataset.subject, parseInt(btn.dataset.i,10));
+      await saveState(); renderAllSteps();
+    });
+  });
+}
+
+// ---- 全ステップ一覧＋おすすめ ----
+function renderStepSubjectTabs(){
+  const wrap = document.getElementById('step-subject-tabs');
+  wrap.innerHTML = '';
+  SUBJECTS.forEach(s=>{
+    const btn = document.createElement('div');
+    btn.className = 'subject-tab' + (s.id===currentStepSubject ? ' active' : '');
+    btn.style.background = s.hex;
+    btn.textContent = s.name;
+    btn.addEventListener('click', ()=>{ currentStepSubject = s.id; renderStepList(); });
+    wrap.appendChild(btn);
+  });
+}
+function renderStepList(){
+  renderStepSubjectTabs();
+  const sub = subjectOf(currentStepSubject);
+  const steps = CURRICULUM[currentStepSubject];
+  const masteredIdxs = steps.map((_,i)=> masteredCount(currentStepSubject,i) > 0);
+  const masteredTotal = masteredIdxs.filter(Boolean).length;
+
+  document.getElementById('step-progress-fill').style.width = (masteredTotal/steps.length*100)+'%';
+  document.getElementById('step-progress-fill').style.background = sub.hex;
+
+  const list = document.getElementById('step-list');
+  list.innerHTML = '';
+  steps.forEach((title, i)=>{
+    const planned = isInMonthlyPlan(currentStepSubject, i);
+    const mc = masteredCount(currentStepSubject, i);
+    const row = document.createElement('div');
+    row.className = 'step-row' + (planned ? ' planned' : '');
+    row.innerHTML = `
+      <span class="num">${i+1}</span>
+      <button class="star-btn ${planned?'on':''}" data-i="${i}" title="今月のステップに追加">☆</button>
+      <span class="title">${title}</span>
+      <span class="badge ${mc>0?'mastered':''}">${mc>0 ? '達成 x'+mc : '未着手'}</span>
+      <button class="btn small outline" data-quiz="1" data-i="${i}">テストを受ける</button>
+    `;
+    list.appendChild(row);
+
+    // おすすめ（未達成の直前ステップ）を、☆追加時のみ表示
+    if(planned){
+      const prereqs = [];
+      for(let p = Math.max(0,i-2); p < i; p++){
+        if(masteredCount(currentStepSubject, p) === 0) prereqs.push(p);
+      }
+      if(prereqs.length > 0){
+        const rec = document.createElement('div');
+        rec.className = 'recommend-box';
+        rec.innerHTML = `<div class="r-title">先にやっておくのがおすすめ</div>` +
+          prereqs.map(p=>`<span class="recommend-chip">${steps[p]}<button data-addprereq="${p}">＋</button></span>`).join('');
+        list.appendChild(rec);
+        rec.querySelectorAll('[data-addprereq]').forEach(b=>{
+          b.addEventListener('click', async ()=>{
+            const pi = parseInt(b.dataset.addprereq,10);
+            if(!isInMonthlyPlan(currentStepSubject, pi)) toggleMonthlyStep(currentStepSubject, pi);
+            await saveState(); renderAllSteps();
+          });
+        });
+      }
+    }
+  });
+  list.querySelectorAll('.star-btn').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      const i = parseInt(btn.dataset.i,10);
+      toggleMonthlyStep(currentStepSubject, i);
+      await saveState(); renderAllSteps();
+    });
+  });
+  list.querySelectorAll('[data-quiz]').forEach(btn=>{
+    btn.addEventListener('click', ()=> openQuiz(currentStepSubject, parseInt(btn.dataset.i,10)));
+  });
+}
+function renderAllSteps(){ renderPoints(); renderMonthlyPlan(); renderStepList(); }
+
+// ---- 確認テスト（AI生成・10問プールから5問出題） ----
+async function ensureQuestionBank(subject, stepIndex){
+  if(!state.questionBanks[subject]) state.questionBanks[subject] = {};
+  if(state.questionBanks[subject][stepIndex] && state.questionBanks[subject][stepIndex].length >= 5){
+    return state.questionBanks[subject][stepIndex];
+  }
+  const sub = subjectOf(subject);
+  const title = CURRICULUM[subject][stepIndex];
+  const systemPrompt = "あなたは高校の"+sub.name+"担当講師です。指定された単元について、確認テスト用の問題を10問作成してください。計算そのものを行わせる問題ではなく、公式・定理・解法パターン・考え方の理解を問う4択問題にしてください（例：ある場面でどの公式/定理を使うべきか、ある解法の手順として正しいものはどれか、ある性質が成り立つのはどの場合か、など）。出力は次のJSON配列のみとし、前置きや説明文、コードブロック記法は一切付けないでください。\n[{\"q\":\"問題文\",\"choices\":[\"選択肢1\",\"選択肢2\",\"選択肢3\",\"選択肢4\"],\"correct\":0}]\ncorrectは正解のchoices配列でのインデックス(0〜3)です。";
+  const raw = await callGemini(systemPrompt, `単元名：${title}`);
+  const cleaned = raw.replace(/```json|```/g,'').trim();
+  const parsed = JSON.parse(cleaned);
+  state.questionBanks[subject][stepIndex] = parsed;
+  await saveState();
+  return parsed;
+}
+function pickFive(bank){
+  const arr = [...bank];
+  for(let i=arr.length-1;i>0;i--){ const j = Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; }
+  return arr.slice(0,5);
+}
+
+async function openQuiz(subject, stepIndex){
+  const overlay = document.getElementById('quiz-overlay');
+  const body = document.getElementById('quiz-body');
+  overlay.classList.add('open');
+  body.innerHTML = '<div class="empty">問題を準備しています…</div>';
+  try{
+    const bank = await ensureQuestionBank(subject, stepIndex);
+    const questions = pickFive(bank);
+    quiz = { subject, stepIndex, questions, index:0, correctCount:0, answered:false };
+    renderQuizQuestion();
+  }catch(e){
+    console.error(e);
+    if(e.message === 'NO_API_KEY'){
+      body.innerHTML = '<div class="empty">先に「AIに質問」タブでGemini APIキーを保存してください。</div>';
+    }else{
+      body.innerHTML = '<div class="empty">問題の準備に失敗しました。時間をおいて再度お試しください。</div>';
+    }
+  }
+}
+function renderQuizQuestion(){
+  const sub = subjectOf(quiz.subject);
+  const title = CURRICULUM[quiz.subject][quiz.stepIndex];
+  const q = quiz.questions[quiz.index];
+  const body = document.getElementById('quiz-body');
+  body.innerHTML = `
+    <div class="quiz-head"><span class="qh-title">${sub.name}：${title}</span><span class="qh-progress">問 ${quiz.index+1} / ${quiz.questions.length}</span></div>
+    <div class="quiz-question">${q.q}</div>
+    <div id="quiz-choices"></div>
+  `;
+  const cWrap = document.getElementById('quiz-choices');
+  q.choices.forEach((c, ci)=>{
+    const b = document.createElement('button');
+    b.className = 'quiz-choice';
+    b.textContent = c;
+    b.addEventListener('click', ()=> answerQuiz(ci));
+    cWrap.appendChild(b);
+  });
+}
+function answerQuiz(choiceIdx){
+  if(quiz.answered) return;
+  quiz.answered = true;
+  const q = quiz.questions[quiz.index];
+  const buttons = document.querySelectorAll('#quiz-choices .quiz-choice');
+  buttons.forEach((b, i)=>{
+    if(i === q.correct) b.classList.add('correct');
+    else if(i === choiceIdx) b.classList.add('wrong');
+  });
+  if(choiceIdx === q.correct) quiz.correctCount++;
+  setTimeout(()=>{
+    quiz.index++;
+    quiz.answered = false;
+    if(quiz.index < quiz.questions.length) renderQuizQuestion();
+    else finishQuiz();
+  }, 700);
+}
+async function finishQuiz(){
+  const pass = quiz.correctCount >= 4;
+  const body = document.getElementById('quiz-body');
+  if(pass){
+    stepRecordsFor(quiz.subject, quiz.stepIndex).push(todayStr());
+    await saveState();
+  }
+  body.innerHTML = `
+    <div class="quiz-result">
+      <div class="qr-score ${pass?'qr-pass':'qr-fail'}">${quiz.correctCount} / ${quiz.questions.length}</div>
+      <div style="font-weight:700; margin-bottom:14px;">${pass ? '合格！+10pt獲得しました' : 'もう一歩。もう一度挑戦してみましょう'}</div>
+      <button class="btn" id="quiz-retry">もう一度挑戦する</button>
+      <button class="btn outline" id="quiz-done" style="margin-left:8px;">閉じる</button>
+    </div>
+  `;
+  document.getElementById('quiz-retry').addEventListener('click', ()=> openQuiz(quiz.subject, quiz.stepIndex));
+  document.getElementById('quiz-done').addEventListener('click', closeQuiz);
+  renderAllSteps();
+}
+function closeQuiz(){
+  document.getElementById('quiz-overlay').classList.remove('open');
+  quiz = null;
+}
+document.getElementById('quiz-close').addEventListener('click', closeQuiz);
+
+// ---- 自学記録 ----
+function initLogForm(){
+  const sel = document.getElementById('log-subject');
+  sel.innerHTML = SUBJECTS.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
+  document.getElementById('log-date').value = todayStr();
+}
+document.getElementById('log-add').addEventListener('click', async ()=>{
+  const date = document.getElementById('log-date').value;
+  const subject = document.getElementById('log-subject').value;
+  const content = document.getElementById('log-content').value.trim();
+  const minutes = parseInt(document.getElementById('log-minutes').value || '0', 10);
+  if(!content || !date) return;
+  state.logs.push({id:uid(), date, subject, content, minutes});
+  document.getElementById('log-content').value=''; document.getElementById('log-minutes').value='';
+  await saveState(); renderLog();
+});
+function renderLog(){
+  const body = document.getElementById('log-body');
+  const sorted = [...state.logs].sort((a,b)=> b.date.localeCompare(a.date));
+  body.innerHTML = '';
+  let total = 0;
+  if(sorted.length===0){ body.innerHTML = '<tr><td colspan="5" class="empty">まだ記録がありません</td></tr>'; }
+  sorted.forEach(l=>{
+    total += (l.minutes||0);
+    const sub = subjectOf(l.subject);
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${l.date}</td><td><span class="subject-pill" style="background:${sub.hex}">${sub.name}</span></td><td>${l.content}</td><td>${l.minutes||0}分</td><td><button class="del" data-id="${l.id}">×</button></td>`;
+    body.appendChild(tr);
+  });
+  document.getElementById('log-total').textContent = total;
+  body.querySelectorAll('.del').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{ state.logs = state.logs.filter(x=>x.id!==btn.dataset.id); await saveState(); renderLog(); });
+  });
+}
+
+function initAssignForm(){
+  const sel = document.getElementById('assign-subject');
+  sel.innerHTML = SUBJECTS.map(s=>`<option value="${s.id}">${s.name}</option>`).join('') + '<option value="other">その他</option>';
+}
+document.getElementById('assign-add').addEventListener('click', async ()=>{
+  const subject = document.getElementById('assign-subject').value;
+  const content = document.getElementById('assign-content').value.trim();
+  const deadline = document.getElementById('assign-deadline').value;
+  if(!content) return;
+  state.assignments.push({id:uid(), subject, content, deadline});
+  document.getElementById('assign-content').value=''; document.getElementById('assign-deadline').value='';
+  await saveState(); renderAssignments();
+});
+function renderAssignments(){
+  const body = document.getElementById('assign-body');
+  const sorted = [...state.assignments].sort((a,b)=> (a.deadline||'9999').localeCompare(b.deadline||'9999'));
+  body.innerHTML = '';
+  if(sorted.length===0){ body.innerHTML = '<tr><td colspan="5" class="empty">まだ課題がありません</td></tr>'; }
+  sorted.forEach(a=>{
+    const sub = a.subject === 'other' ? {name:'その他', hex:'#8B93A8'} : subjectOf(a.subject);
+    const d = a.deadline ? daysUntil(a.deadline) : null;
+    let dueLabel = a.deadline || '(期限なし)';
+    let dueBadge = '';
+    if(d !== null){
+      if(d < 0) dueBadge = '<span class="badge">終了</span>';
+      else if(d === 0) dueBadge = '<span class="badge mastered">本日締切</span>';
+      else dueBadge = `<span class="badge">残り${d}日</span>`;
+    }
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td><span class="subject-pill" style="background:${sub.hex}">${sub.name}</span></td><td>${a.content}</td><td>${dueLabel}</td><td>${dueBadge}</td><td><button class="del" data-id="${a.id}">×</button></td>`;
+    body.appendChild(tr);
+  });
+  body.querySelectorAll('.del').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{ state.assignments = state.assignments.filter(x=>x.id!==btn.dataset.id); await saveState(); renderAssignments(); });
+  });
+}
+
+// ---- 1日の使い方 ----
+const TIME_CATEGORIES = [
+  {id:'school', name:'学校', hex:'#4C6FFF'},
+  {id:'study', name:'勉強', hex:'#2A9D8F'},
+  {id:'help', name:'お手伝い', hex:'#E0932E'},
+  {id:'sleep', name:'睡眠', hex:'#8B93A8'},
+  {id:'meal', name:'食事', hex:'#6B9B5E'},
+  {id:'commute', name:'移動', hex:'#C4677D'},
+  {id:'free', name:'自由時間', hex:'#C8952A'},
+  {id:'other', name:'その他', hex:'#8B6F47'}
+];
+function timeCategoryOf(id){ return TIME_CATEGORIES.find(c=>c.id===id) || TIME_CATEGORIES[TIME_CATEGORIES.length-1]; }
+function timeToMinutes(t){ const [h,m] = t.split(':').map(Number); return h*60+m; }
+
+function initTimeForm(){
+  const sel = document.getElementById('time-category');
+  sel.innerHTML = TIME_CATEGORIES.map(c=>`<option value="${c.id}">${c.name}</option>`).join('');
+  const legend = document.getElementById('time-legend');
+  legend.innerHTML = TIME_CATEGORIES.map(c=>`<span class="legend-item"><span class="legend-dot" style="background:${c.hex}"></span>${c.name}</span>`).join('');
+}
+
+document.getElementById('time-add').addEventListener('click', async ()=>{
+  const category = document.getElementById('time-category').value;
+  const start = document.getElementById('time-start').value;
+  const end = document.getElementById('time-end').value;
+  const content = document.getElementById('time-content').value.trim();
+  if(!start || !end) return;
+  state.timeBlocks.push({id:uid(), category, start, end, content});
+  document.getElementById('time-start').value=''; document.getElementById('time-end').value=''; document.getElementById('time-content').value='';
+  await saveState(); renderTimePage();
+});
+
+function renderClock(blocksForDay){
+  const sorted = [...blocksForDay].sort((a,b)=> timeToMinutes(a.start)-timeToMinutes(b.start));
+  let stops = [];
+  let cursor = 0; // minutes
+  sorted.forEach(b=>{
+    let s = timeToMinutes(b.start), e = timeToMinutes(b.end);
+    if(e <= s) e = s; // 不正な範囲は無視
+    if(s < cursor) s = cursor; // 重なりは簡易的に詰める
+    if(e <= s) return;
+    if(s > cursor){ stops.push({deg0:(cursor/1440*360), deg1:(s/1440*360), color:'var(--paper-line)'}); }
+    stops.push({deg0:(s/1440*360), deg1:(e/1440*360), color: timeCategoryOf(b.category).hex});
+    cursor = e;
+  });
+  if(cursor < 1440){ stops.push({deg0:(cursor/1440*360), deg1:360, color:'var(--paper-line)'}); }
+  const gradientParts = stops.map(s=> `${s.color} ${s.deg0}deg ${s.deg1}deg`).join(', ');
+  const face = document.getElementById('clock-face');
+  face.style.background = stops.length ? `conic-gradient(from 0deg, ${gradientParts})` : 'var(--paper-line)';
+
+  const labelsWrap = document.getElementById('clock-labels');
+  labelsWrap.innerHTML = '';
+  const R = 122, C = 130;
+  [0,3,6,9,12,15,18,21].forEach(h=>{
+    const angle = (h/24*360 - 90) * Math.PI/180;
+    const x = C + R*Math.cos(angle), y = C + R*Math.sin(angle);
+    const span = document.createElement('span');
+    span.style.left = x+'px'; span.style.top = y+'px';
+    span.textContent = h+'時';
+    labelsWrap.appendChild(span);
+  });
+}
+
+function renderTimeList(blocksForDay){
+  const wrap = document.getElementById('time-list');
+  wrap.innerHTML = '';
+  const sorted = [...blocksForDay].sort((a,b)=> timeToMinutes(a.start)-timeToMinutes(b.start));
+  if(sorted.length===0){ wrap.innerHTML = '<div class="empty">まだ入力がありません</div>'; return; }
+  sorted.forEach(b=>{
+    const cat = timeCategoryOf(b.category);
+    const row = document.createElement('div');
+    row.className = 'time-row';
+    row.innerHTML = `
+      <span class="t-range">${b.start}〜${b.end}</span>
+      <span class="subject-pill" style="background:${cat.hex}">${cat.name}</span>
+      <span class="t-content">${b.content||''}</span>
+      <button class="del" data-id="${b.id}">×</button>
+    `;
+    wrap.appendChild(row);
+  });
+  wrap.querySelectorAll('.del').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{ state.timeBlocks = state.timeBlocks.filter(x=>x.id!==btn.dataset.id); await saveState(); renderTimePage(); });
+  });
+}
+
+function renderTimePage(){
+  renderClock(state.timeBlocks);
+  renderTimeList(state.timeBlocks);
+}
+
+// ---- AIに質問 ----
+function initAskForm(){
+  const sel = document.getElementById('ask-subject');
+  sel.innerHTML = SUBJECTS.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
+  document.getElementById('gemini-key').value = state.geminiApiKey || '';
+  const chips = document.getElementById('prompt-chips');
+  chips.innerHTML = '';
+  PROMPT_TEMPLATES.forEach(t=>{
+    const c = document.createElement('div');
+    c.className = 'chip'; c.textContent = t.label;
+    c.addEventListener('click', ()=>{ document.getElementById('ask-text').value = t.text; });
+    chips.appendChild(c);
+  });
+}
+document.getElementById('ask-send').addEventListener('click', async ()=>{
+  const subject = document.getElementById('ask-subject').value;
+  const stepCtx = document.getElementById('ask-step').value.trim();
+  const question = document.getElementById('ask-text').value.trim();
+  if(!question) return;
+  const sub = subjectOf(subject);
+  const btn = document.getElementById('ask-send');
+  const loading = document.getElementById('ask-loading');
+  btn.disabled = true; loading.style.display = 'inline';
+  const systemPrompt = "あなたは高校2年生の家庭学習を支える専属チューターです。国公立理系志望の生徒からの質問に対して、いきなり答えを教えるのではなく、まずヒントを1つだけ提示し、生徒が自分で考えられるよう導いてください。生徒が「まだわからない」と言えば次のヒントを出し、最終的な答えは生徒が近づいてから確認する形で示してください。説明は高校生にわかりやすい言葉で、専門用語はかみ砕いてください。";
+  const userContent = `教科：${sub.name}\n取り組んでいるステップ：${stepCtx || '(指定なし)'}\n\n質問内容：\n${question}`;
+  try{
+    const answer = await callGemini(systemPrompt, userContent) || '(応答を取得できませんでした)';
+    state.qaHistory.unshift({id:uid(), subject, step:stepCtx, question, answer, ts:new Date().toLocaleString('ja-JP')});
+    document.getElementById('ask-text').value = '';
+    await saveState(); renderQaHistory();
+  }catch(e){
+    console.error(e);
+    if(e.message === 'NO_API_KEY') alert('先にGemini APIキーを保存してください。');
+    else alert('AIへの問い合わせに失敗しました。時間をおいて再度お試しください。');
+  }
+  finally{ btn.disabled = false; loading.style.display = 'none'; }
+});
+function renderQaHistory(){
+  const wrap = document.getElementById('qa-history');
+  wrap.innerHTML = '';
+  if(state.qaHistory.length===0) return;
+  state.qaHistory.forEach(qa=>{
+    const sub = subjectOf(qa.subject);
+    const block = document.createElement('div');
+    block.className = 'qa-block';
+    block.innerHTML = `
+      <div class="qa-q"><span class="subject-pill" style="background:${sub.hex}">${sub.name}</span> &nbsp;${qa.question.replace(/</g,'&lt;')}</div>
+      <div class="qa-a">${qa.answer.replace(/</g,'&lt;')}</div>
+      <div class="qa-meta"><span>${qa.ts}${qa.step ? '　／　'+qa.step : ''}</span><button class="del" data-id="${qa.id}">×</button></div>
+    `;
+    wrap.appendChild(block);
+  });
+  wrap.querySelectorAll('.del').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{ state.qaHistory = state.qaHistory.filter(x=>x.id!==btn.dataset.id); await saveState(); renderQaHistory(); });
+  });
+}
+
+// ---- 振り返り ----
+document.getElementById('rf-add').addEventListener('click', async ()=>{
+  const week = document.getElementById('rf-week').value.trim();
+  const student = document.getElementById('rf-student').value.trim();
+  const parent = document.getElementById('rf-parent').value.trim();
+  if(!week && !student && !parent) return;
+  state.reflections.unshift({id:uid(), week, student, parent});
+  document.getElementById('rf-week').value=''; document.getElementById('rf-student').value=''; document.getElementById('rf-parent').value='';
+  await saveState(); renderReflect();
+});
+function renderReflect(){
+  const list = document.getElementById('reflect-list');
+  list.innerHTML='';
+  if(state.reflections.length===0){ list.innerHTML = '<div class="empty">まだ振り返りがありません</div>'; return; }
+  state.reflections.forEach(r=>{
+    const block = document.createElement('div');
+    block.className = 'reflect-block';
+    block.innerHTML = `
+      <div class="reflect-head"><span class="wk">${r.week || '（週の指定なし）'}</span><button class="del" data-id="${r.id}">×</button></div>
+      ${r.student ? `<div class="quote-mark">本人の振り返り</div><div>${r.student}</div>` : ''}
+      ${r.parent ? `<div class="parent-box"><div class="quote-mark">保護者コメント</div><div>${r.parent}</div></div>` : ''}
+    `;
+    list.appendChild(block);
+  });
+  list.querySelectorAll('.del').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{ state.reflections = state.reflections.filter(x=>x.id!==btn.dataset.id); await saveState(); renderReflect(); });
+  });
+}
+
+function render(){
+  renderGoals();
+  renderCountdownFields();
+  renderCountdowns();
+  renderAllSteps();
+  initLogForm();
+  renderLog();
+  initAssignForm();
+  renderAssignments();
+  initTimeForm();
+  renderTimePage();
+  initAskForm();
+  renderQaHistory();
+  renderReflect();
+}
+loadState();
+</script>
+</body>
+</html>
