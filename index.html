@@ -135,6 +135,10 @@
   .quiz-close{ position:absolute; top:14px; right:16px; background:none; border:none; font-size:20px; cursor:pointer; color:var(--ink-soft); }
   .quiz-card{ position:relative; }
 
+  .profile-switch{ display:flex; gap:8px; margin-bottom:16px; }
+  .profile-btn{ font-family:'Zen Maru Gothic',sans-serif; font-weight:700; font-size:13px; padding:8px 20px; border-radius:20px; border:2px solid var(--paper-line); background:#fff; color:var(--ink-soft); cursor:pointer; }
+  .profile-btn.active{ background:var(--ink); border-color:var(--ink); color:#fff; }
+
   .clock-wrap{ position:relative; width:260px; height:260px; margin:10px auto 6px; }
   .clock-face{ width:260px; height:260px; border-radius:50%; background:var(--paper-line); position:relative; }
   .clock-hole{ position:absolute; top:38px; left:38px; width:184px; height:184px; border-radius:50%; background:#fff; display:flex; align-items:center; justify-content:center; font-family:'Zen Maru Gothic',sans-serif; font-weight:700; font-size:13px; color:var(--ink-soft); text-align:center; }
@@ -153,6 +157,11 @@
   <div class="header">
     <h1>学習手帳</h1>
     <div class="sub">目標 → 1日の使い方 → 学習ステップ → 記録 → AIに質問 → 振り返り</div>
+  </div>
+
+  <div class="profile-switch" id="profile-switch">
+    <button class="profile-btn active" data-who="a">楓</button>
+    <button class="profile-btn" data-who="b">椿</button>
   </div>
 
   <div class="tabs">
@@ -362,11 +371,16 @@ function subjectOf(id){ return SUBJECTS.find(s=>s.id===id) || SUBJECTS[0]; }
 function todayStr(){ return new Date().toISOString().slice(0,10); }
 function currentMonthStr(){ return new Date().toISOString().slice(0,7); }
 
+const SYNC_URL = 'https://script.google.com/macros/s/AKfycbzUwh-3x5Sf7mEuWxUm7HpKq_I69UkohlspixOpbEbrhntQvVbO9MCALgdMopqxpjnE8w/exec';
+let currentWho = 'a';
+
 async function loadState(){
   try{
-    const raw = localStorage.getItem(STORE_KEY);
-    if(raw){
-      const parsed = JSON.parse(raw);
+    const res = await fetch(SYNC_URL + '?who=' + currentWho, { cache: 'no-store' });
+    const text = await res.text();
+    const parsed = JSON.parse(text);
+    state = DEFAULT_STATE();
+    if(parsed && Object.keys(parsed).length){
       state = Object.assign(DEFAULT_STATE(), parsed);
       if(!state.stepRecords) state.stepRecords = {};
       if(!state.monthlyPlan) state.monthlyPlan = {};
@@ -375,13 +389,24 @@ async function loadState(){
       if(!state.timeBlocks) state.timeBlocks = [];
       if(!state.assignments) state.assignments = [];
     }
-  }catch(e){ /* 初回はデータなし */ }
+  }catch(e){ console.error('読み込みに失敗しました', e); state = DEFAULT_STATE(); }
   render();
 }
 async function saveState(){
-  try{ localStorage.setItem(STORE_KEY, JSON.stringify(state)); }
-  catch(e){ console.error('保存に失敗しました', e); }
+  try{
+    await fetch(SYNC_URL + '?who=' + currentWho, { method: 'POST', mode: 'no-cors', body: JSON.stringify(state) });
+  }catch(e){ console.error('保存に失敗しました', e); }
 }
+
+document.querySelectorAll('.profile-btn').forEach(btn=>{
+  btn.addEventListener('click', async ()=>{
+    if(btn.dataset.who === currentWho) return;
+    document.querySelectorAll('.profile-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    currentWho = btn.dataset.who;
+    await loadState();
+  });
+});
 
 const GEMINI_MODEL = 'gemini-2.5-flash';
 async function callGemini(systemPrompt, userContent){
